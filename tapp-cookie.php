@@ -3,7 +3,7 @@
  * Plugin Name: tapp cookie
  * Plugin URI: https://tappcookie.cz
  * Description: Cookie lišta tapp cookie (consent management TAPP Studio s.r.o.): vloží skript do hlavičky jako první, blokuje měřicí kódy před souhlasem, generuje tabulku cookies a propojuje WP Consent API.
- * Version: 0.2.0
+ * Version: 0.2.1
  * Requires at least: 6.4
  * Requires PHP: 8.1
  * Author: TAPP Studio s.r.o.
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TAPP_COOKIE_VERSION', '0.2.0' );
+define( 'TAPP_COOKIE_VERSION', '0.2.1' );
 define( 'TAPP_COOKIE_DEFAULT_CMP', 'https://cmp.tappcookie.cz' );
 if ( ! defined( 'TAPP_COOKIE_UPDATE_URL' ) ) {
 	define( 'TAPP_COOKIE_UPDATE_URL', 'https://cmp.tappcookie.cz/wordpress/tapp-cookie.json' );
@@ -115,18 +115,27 @@ add_action(
 );
 
 /**
+ * Bezi lista na teto strance? Stejne podminky plati pro vypis skriptu do hlavicky i pro blokovani
+ * Google tagu na serveru: bez tappcookie.js by zablokovany tag uz nikdo neaktivoval.
+ */
+function tapp_cookie_on_page(): bool {
+	$s = tapp_cookie_settings();
+	if ( '' === $s['site_id'] || '' === $s['tenant_id'] ) {
+		return false;
+	}
+	return $s['admins'] || ! current_user_can( 'manage_options' );
+}
+
+/**
  * Skript do <head> jako prvni (priorita 0). Synchronne: auto-blocking musi bezet pred ostatnimi skripty.
  */
 add_action(
 	'wp_head',
 	static function (): void {
-		$s = tapp_cookie_settings();
-		if ( '' === $s['site_id'] || '' === $s['tenant_id'] ) {
+		if ( ! tapp_cookie_on_page() ) {
 			return;
 		}
-		if ( ! $s['admins'] && current_user_can( 'manage_options' ) ) {
-			return;
-		}
+		$s     = tapp_cookie_settings();
 		$attrs = array(
 			'src'         => $s['cmp_url'] . '/tappcookie.js',
 			'data-site'   => $s['site_id'],
@@ -154,6 +163,84 @@ add_action(
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- staticky text + atributy escapovane vyse
 	},
 	0
+);
+
+/**
+ * Google tag z `wp_enqueue_script` (Site Kit `google_gtagjs`, dalsi pluginy) se pri automatickem
+ * blokovani zneskodni uz v HTML. Jinak ho prohlizec stahne z HTML driv, nez ho tappcookie.js
+ * stihne zablokovat (preload scanner): spustit se nesmi, ale pozadavek na Google odejde pred
+ * souhlasem (kontrola testovaciho webu 19. 11. 2026). Tvar je stejny, jaky vyrabi auto-blocking
+ * SDK (`data-src`, `data-tapp-auto`): SDK po nacteni configu prepocita kategorii i rezim
+ * basic/advanced (`relabel`) a po souhlasu skript vlozi.
+ *
+ * @param string $src URL skriptu.
+ */
+function tapp_cookie_is_google_tag( string $src ): bool {
+	$host = wp_parse_url( $src, PHP_URL_HOST );
+	$path = wp_parse_url( $src, PHP_URL_PATH );
+	return is_string( $host ) && 'www.googletagmanager.com' === strtolower( $host )
+		&& in_array( $path, array( '/gtag/js', '/gtm.js' ), true );
+}
+
+add_filter(
+	'script_loader_tag',
+	static function ( $tag, $handle, $src ) {
+		if ( ! is_string( $tag ) || ! is_string( $src ) || ! tapp_cookie_is_google_tag( $src ) ) {
+			return $tag;
+		}
+		if ( 'auto' !== tapp_cookie_settings()['blocking'] || ! tapp_cookie_on_page() ) {
+			return $tag;
+		}
+		$p = new WP_HTML_Tag_Processor( $tag );
+		while ( $p->next_tag( 'script' ) ) {
+			$url = $p->get_attribute( 'src' );
+			if ( ! is_string( $url ) || ! tapp_cookie_is_google_tag( $url ) || null !== $p->get_attribute( 'data-tapp-consent' ) ) {
+				continue;
+			}
+			$type = $p->get_attribute( 'type' );
+			if ( is_string( $type ) && '' !== $type ) {
+				$p->set_attribute( 'data-type', $type );
+			}
+			$p->set_attribute( 'type', 'text/plain' );
+			$p->set_attribute( 'data-src', $url );
+			$p->remove_attribute( 'src' );
+			$p->set_attribute( 'data-tapp-consent', 'analytics' );
+			$p->set_attribute( 'data-tapp-auto', '1' );
+		}
+		return $p->get_updated_html();
+	},
+	10,
+	3
+);
+
+/*
+ * WordPress k zarazenym skriptum pridava `dns-prefetch` na jejich hosta a Site Kit ho pridava
+ * jeste sam (vlastni filtr registrovany pozdeji); u Google tagu by se dotaz na googletagmanager.com
+ * polozil pred souhlasem. Proto az na konci (PHP_INT_MAX), stejne podminky jako blokovani vyse.
+ */
+add_filter(
+	'wp_resource_hints',
+	static function ( $urls, $relation ) {
+		if ( ! in_array( $relation, array( 'dns-prefetch', 'preconnect' ), true ) || ! is_array( $urls ) ) {
+			return $urls;
+		}
+		if ( 'auto' !== tapp_cookie_settings()['blocking'] || ! tapp_cookie_on_page() ) {
+			return $urls;
+		}
+		return array_values(
+			array_filter(
+				$urls,
+				static function ( $u ): bool {
+					$href = is_array( $u ) ? (string) ( $u['href'] ?? '' ) : (string) $u;
+					// wp_dependencies_unique_hosts() dava holy host ("www.googletagmanager.com")
+					$host = wp_parse_url( ( false === strpos( $href, '//' ) ? '//' : '' ) . $href, PHP_URL_HOST );
+					return ! ( is_string( $host ) && 'www.googletagmanager.com' === strtolower( $host ) );
+				}
+			)
+		);
+	},
+	PHP_INT_MAX,
+	2
 );
 
 /**

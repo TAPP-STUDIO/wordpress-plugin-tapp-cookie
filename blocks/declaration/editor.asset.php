@@ -8,5 +8,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 return array(
 	'dependencies' => array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n' ),
-	'version'      => '0.2.0',
+	'version'      => '0.2.1',
 );

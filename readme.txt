@@ -4,7 +4,7 @@ Tags: cookies, gdpr, consent, cookie banner, consent mode
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,10 @@ Odkaz nese atribut `data-tapp-cookie-settings` a obsluhuje ho skript pluginu; ne
 Automatické blokování zachytí známé nástroje (Google, Microsoft, Meta, Seznam, LinkedIn, TikTok, Hotjar, YouTube...). Skripty vložené serverem před tapp cookie nebo first-party proxy zachytit nelze; označte je ručně nebo je podmiňte v Google Tag Manageru.
 
 == Changelog ==
+
+= 0.2.1 =
+* Google tag vložený jiným pluginem (například Site Kit by Google) zablokuje už na serveru, takže ho prohlížeč před souhlasem ani nestáhne. Po souhlasu ho spustí lišta tapp cookie.
+* Odebere `dns-prefetch` na googletagmanager.com, který WordPress k Google tagu přidává.
 
 = 0.2.0 =
 * Plugin se aktualizuje sám z cmp.tappcookie.cz (mimo WordPress.org).

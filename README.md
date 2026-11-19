@@ -1,7 +1,7 @@
 # tapp cookie for WordPress
 
 WordPress plugin for [tapp cookie](https://tappcookie.cz), the consent management platform by TAPP Studio s.r.o.
-Current version: 0.2.0.
+Current version: 0.2.1.
 
 ## What it does
 
@@ -19,7 +19,7 @@ Current version: 0.2.0.
 
 ## Install
 
-1. Download [tapp-cookie-0.2.0.zip](https://cmp.tappcookie.cz/wordpress/tapp-cookie-0.2.0.zip) and upload it in
+1. Download [tapp-cookie-0.2.1.zip](https://cmp.tappcookie.cz/wordpress/tapp-cookie-0.2.1.zip) and upload it in
    Plugins → Add New → Upload Plugin, then activate it.
 2. Install and activate the [WP Consent API](https://wordpress.org/plugins/wp-consent-api/) plugin.
 3. Settings → tapp cookie: enter the Site ID and Tenant ID from the tapp cookie admin (https://tappcookie.cz/app).
