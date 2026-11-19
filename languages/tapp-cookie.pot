@@ -1,0 +1,81 @@
+# tapp cookie WordPress plugin - translation template.
+msgid ""
+msgstr ""
+"Project-Id-Version: tapp cookie 0.2.0\n"
+"Language-Team: TAPP Studio <info@tapp-studio.cz>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: tapp-cookie\n"
+
+msgid "Nastavení soukromí"
+msgstr ""
+
+msgid "tapp cookie"
+msgstr ""
+
+msgid "Nastavení"
+msgstr ""
+
+msgid "Údaje najdete v administraci tapp cookie v záložce Instalace u vašeho webu. Lišta se vloží do hlavičky jako první skript."
+msgstr ""
+
+msgid "Site ID"
+msgstr ""
+
+msgid "Tenant ID (klient)"
+msgstr ""
+
+msgid "CMP URL"
+msgstr ""
+
+msgid "Nechte výchozí, pokud vám TAPP neřekl jinak."
+msgstr ""
+
+msgid "Jazyk lišty"
+msgstr ""
+
+msgid "Prázdné = podle jazyka webu. Jinak cs, en, sk, de."
+msgstr ""
+
+msgid "Blokování měřicích kódů"
+msgstr ""
+
+msgid "Automaticky (doporučeno) - známé nástroje se spustí až po souhlasu"
+msgstr ""
+
+msgid "Ručně - skripty si označíte sami (type=\"text/plain\" data-tapp-consent=\"...\")"
+msgstr ""
+
+msgid "Přihlášení správci"
+msgstr ""
+
+msgid "Zobrazovat lištu i přihlášeným správcům webu"
+msgstr ""
+
+msgid "Použití"
+msgstr ""
+
+msgid "tabulka nástrojů a cookies na stránku Zásady cookies (nebo blok „Tabulka cookies\")."
+msgstr ""
+
+msgid "Volitelné atributy: locale=\"cs\" (jazyk tabulky) a styles=\"false\" (vypne výchozí vzhled, tabulku pak stylujete sami přes třídy tc-decl*)."
+msgstr ""
+
+msgid "odkaz do patičky pro změnu nebo odvolání souhlasu."
+msgstr ""
+
+msgid "Tabulka cookies (tapp cookie)"
+msgstr ""
+
+msgid "Na webu se zde vykreslí nástroje a cookies z vaší deklarace. Náhled je v administraci tapp cookie."
+msgstr ""
+
+msgid "Jazyk (prázdné = podle webu)"
+msgstr ""
+
+msgid "Výchozí vzhled tapp cookie"
+msgstr ""
+
+msgid "Vypněte, pokud tabulku stylujete sami (třídy tc-decl*)."
+msgstr ""
